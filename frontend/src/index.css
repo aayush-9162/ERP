@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ═══════════════════════════════════════════
+   Print styles — only show #printable-area
+   ═══════════════════════════════════════════ */
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the printable content and its children */
+  #printable-area,
+  #printable-area * {
+    visibility: visible;
+  }
+
+  /* Position printable area at top-left of page */
+  #printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Hide sidebar, header, nav, buttons, toasts */
+  aside,
+  nav,
+  .print\\:hidden,
+  [data-print-hide],
+  .Toastify,
+  button,
+  a[href] {
+    display: none !important;
+  }
+
+  /* But show buttons that are inside the printable area (status badges etc) */
+  #printable-area span,
+  #printable-area div {
+    visibility: visible;
+  }
+
+  /* Page settings */
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  /* Clean up backgrounds for printing */
+  #printable-area .bg-gray-50 {
+    background-color: #f9fafb !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure table borders print */
+  #printable-area table {
+    border-collapse: collapse;
+  }
+
+  #printable-area th,
+  #printable-area td {
+    border-color: #e5e7eb;
+  }
+}

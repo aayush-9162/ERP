@@ -1,14 +1,21 @@
 const jwt = require('jsonwebtoken');
-const { User, Role, UserCompany, Company } = require('../models');
+const { User, Role, UserCompany, Company, Tenant } = require('../models');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 
 async function getUserCompanies(userId) {
   const memberships = await UserCompany.findAll({
     where: { user_id: userId, status: 'active' },
-    include: [{ association: 'company', attributes: ['id', 'name', 'currency'] }, { association: 'role', attributes: ['id', 'name'] }],
+    include: [
+      { association: 'company', attributes: ['id', 'name', 'currency', 'country', 'tenant_id'], include: [{ model: Tenant, as: 'tenant', attributes: ['id', 'country', 'currency', 'plan', 'status'] }] },
+      { association: 'role', attributes: ['id', 'name'] },
+    ],
   });
-  return memberships.map((m) => ({ id: m.company.id, name: m.company.name, currency: m.company.currency, role: m.role.name }));
+  return memberships.map((m) => ({
+    id: m.company.id, name: m.company.name, currency: m.company.currency, country: m.company.country,
+    role: m.role.name,
+    tenant: m.company.tenant ? { id: m.company.tenant.id, country: m.company.tenant.country, currency: m.company.tenant.currency, plan: m.company.tenant.plan } : null,
+  }));
 }
 
 function generateToken(user) {

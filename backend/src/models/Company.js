@@ -73,6 +73,11 @@ const Company = sequelize.define('Company', {
     allowNull: true,
     comment: 'User who created/owns this company',
   },
+  tenant_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'Tenant this company belongs to',
+  },
 }, {
   tableName: 'companies',
 });

@@ -42,6 +42,16 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  is_super_admin: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Platform-level super admin (SaaS owner)',
+  },
+  tenant_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'Which tenant this user belongs to (null for super admin)',
+  },
 }, {
   tableName: 'users',
   hooks: {

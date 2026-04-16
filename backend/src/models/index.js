@@ -1,4 +1,5 @@
 const sequelize = require('../config/database');
+const Tenant = require('./Tenant');
 const User = require('./User');
 const Role = require('./Role');
 const Permission = require('./Permission');
@@ -97,6 +98,12 @@ UserCompany.belongsTo(Company, { foreignKey: 'company_id', as: 'company' });
 UserCompany.belongsTo(Role, { foreignKey: 'role_id', as: 'role' });
 Company.belongsTo(User, { foreignKey: 'owner_id', as: 'owner' });
 
+// SaaS: Tenant associations
+Tenant.hasMany(User, { foreignKey: 'tenant_id', as: 'users' });
+User.belongsTo(Tenant, { foreignKey: 'tenant_id', as: 'tenant' });
+Tenant.hasMany(Company, { foreignKey: 'tenant_id', as: 'companies' });
+Company.belongsTo(Tenant, { foreignKey: 'tenant_id', as: 'tenant' });
+
 // Company -> all business entities (for referential integrity)
 const companyModels = [Category, Brand, Product, Warehouse, Customer, Supplier, Sale, Purchase, Quotation, Account, Inventory, StockMovement, Payment, SupplierPayment, Transaction];
 for (const M of companyModels) {
@@ -105,7 +112,7 @@ for (const M of companyModels) {
 }
 
 module.exports = {
-  sequelize, User, Role, Permission, Company, UserCompany,
+  sequelize, Tenant, User, Role, Permission, Company, UserCompany,
   Category, Brand, Product, Warehouse, Inventory, StockMovement,
   Customer, Sale, SaleItem, Payment,
   Supplier, Purchase, PurchaseItem, SupplierPayment,

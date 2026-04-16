@@ -6,6 +6,9 @@ const { companyScope } = require('../middleware/companyScope');
 router.use('/auth', require('./auth.routes'));
 router.use('/companies', require('./companyManagement.routes'));
 
+// --- Super Admin (SaaS platform management) ---
+router.use('/super-admin', require('./superAdmin.routes'));
+
 // --- Company-scoped routes (all business data) ---
 // companyScope reads x-company-id header and attaches req.companyId
 router.use(authenticate, companyScope);

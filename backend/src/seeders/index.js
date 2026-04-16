@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sequelize, Role, Permission, User, Company, UserCompany, Category, Brand, Product, Inventory, StockMovement, Customer, Sale, SaleItem, Payment, Supplier, Purchase, PurchaseItem, SupplierPayment, Account, Transaction, Quotation, QuotationItem, TaxRule, Currency, ExchangeRate } = require('../models');
+const { sequelize, Tenant, Role, Permission, User, Company, UserCompany, Category, Brand, Product, Inventory, StockMovement, Customer, Sale, SaleItem, Payment, Supplier, Purchase, PurchaseItem, SupplierPayment, Account, Transaction, Quotation, QuotationItem, TaxRule, Currency, ExchangeRate } = require('../models');
 const { ROLES } = require('../config/constants');
 
 async function seed() {
@@ -7,13 +7,36 @@ async function seed() {
     await sequelize.sync({ force: true });
     console.log('Database synced.');
 
-    // ===== Phase 1: Core =====
-
+    // ===== SaaS: Super Admin =====
     const [adminRole, managerRole, staffRole] = await Promise.all([
       Role.create({ name: ROLES.ADMIN, description: 'Full system access' }),
       Role.create({ name: ROLES.MANAGER, description: 'Department-level management access' }),
       Role.create({ name: ROLES.STAFF, description: 'Basic operational access' }),
     ]);
+
+    // Platform super admin (you - the SaaS owner)
+    const superAdmin = await User.create({
+      first_name: 'Platform', last_name: 'Admin',
+      email: 'superadmin@erp.com', password: 'SuperAdmin@123',
+      phone: '9999999999', role_id: adminRole.id, status: 'active',
+      is_super_admin: true, tenant_id: null,
+    });
+    console.log('Super Admin created: superadmin@erp.com / SuperAdmin@123');
+
+    // ===== SaaS: Sample Tenant (India) =====
+    const tenant1 = await Tenant.create({
+      business_name: 'Acme Industries Pvt. Ltd.',
+      slug: 'acme-industries-' + Date.now().toString(36),
+      owner_name: 'Super Admin',
+      owner_email: 'admin@erp.local',
+      owner_phone: '9876543210',
+      country: 'IN', currency: 'INR',
+      plan: 'professional', max_users: 50, max_companies: 5,
+      status: 'active',
+    });
+    console.log('Tenant created:', tenant1.business_name);
+
+    // ===== Phase 1: Core =====
 
     const permissions = await Permission.bulkCreate([
       { name: 'users:create', description: 'Create users', module: 'users' },
@@ -52,10 +75,10 @@ async function seed() {
     ));
     console.log('Roles + permissions set.');
 
-    const adminUser = await User.create({ first_name: 'Super', last_name: 'Admin', email: 'admin@erp.local', password: 'Admin@123', phone: '9876543210', role_id: adminRole.id, status: 'active' });
-    const managerUser = await User.create({ first_name: 'Rahul', last_name: 'Sharma', email: 'manager@erp.local', password: 'Manager@123', phone: '9876543211', role_id: managerRole.id, status: 'active' });
-    const staffUser = await User.create({ first_name: 'Priya', last_name: 'Patel', email: 'staff@erp.local', password: 'Staff@123', phone: '9876543212', role_id: staffRole.id, status: 'active' });
-    const company1 = await Company.create({ name: 'Acme Industries Pvt. Ltd.', gst_number: '27AAPFU0939F1ZV', pan_number: 'AAPFU0939F', address_line1: '42, Industrial Area Phase II', city: 'Pune', state: 'Maharashtra', pincode: '411018', country: 'India', currency: 'INR', phone: '020-12345678', email: 'info@acmeindustries.in', website: 'https://acmeindustries.in', owner_id: adminUser.id });
+    const adminUser = await User.create({ first_name: 'Super', last_name: 'Admin', email: 'admin@erp.local', password: 'Admin@123', phone: '9876543210', role_id: adminRole.id, status: 'active', tenant_id: tenant1.id });
+    const managerUser = await User.create({ first_name: 'Rahul', last_name: 'Sharma', email: 'manager@erp.local', password: 'Manager@123', phone: '9876543211', role_id: managerRole.id, status: 'active', tenant_id: tenant1.id });
+    const staffUser = await User.create({ first_name: 'Priya', last_name: 'Patel', email: 'staff@erp.local', password: 'Staff@123', phone: '9876543212', role_id: staffRole.id, status: 'active', tenant_id: tenant1.id });
+    const company1 = await Company.create({ name: 'Acme Industries Pvt. Ltd.', gst_number: '27AAPFU0939F1ZV', pan_number: 'AAPFU0939F', address_line1: '42, Industrial Area Phase II', city: 'Pune', state: 'Maharashtra', pincode: '411018', country: 'India', currency: 'INR', phone: '020-12345678', email: 'info@acmeindustries.in', website: 'https://acmeindustries.in', owner_id: adminUser.id, tenant_id: tenant1.id });
 
     // User-Company associations: all 3 users belong to company 1
     await UserCompany.bulkCreate([
@@ -268,11 +291,16 @@ async function seed() {
     ]);
     console.log('Tax rules + currencies seeded.');
 
-    console.log('\nSeed complete!');
+    console.log('\n========== Seed complete! ==========');
+    console.log('\n--- SaaS Super Admin (Admin Panel) ---');
+    console.log('  superadmin@erp.com / SuperAdmin@123');
+    console.log('  URL: http://localhost:5174');
+    console.log('\n--- Tenant Users (ERP App) ---');
     console.log('  Admin   -> admin@erp.local   / Admin@123');
     console.log('  Manager -> manager@erp.local  / Manager@123');
     console.log('  Staff   -> staff@erp.local    / Staff@123');
-    console.log('  7 products, 5 currencies, 19 tax rules (IN/US/GB/AE).');
+    console.log('  URL: http://localhost:5173');
+    console.log('\n  1 tenant (India), 7 products, 5 currencies, 19 tax rules.');
     process.exit(0);
   } catch (error) {
     console.error('Seeding failed:', error);

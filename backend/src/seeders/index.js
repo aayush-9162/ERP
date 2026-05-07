@@ -1,11 +1,17 @@
 require('dotenv').config();
 const { sequelize, Tenant, Role, Permission, User, Company, UserCompany, Category, Brand, Product, Inventory, StockMovement, Customer, Sale, SaleItem, Payment, Supplier, Purchase, PurchaseItem, SupplierPayment, Account, Transaction, Quotation, QuotationItem, TaxRule, Currency, ExchangeRate } = require('../models');
 const { ROLES } = require('../config/constants');
+const { applyPostSyncIndexes } = require('../db/postSyncIndexes');
+const dumpSchema = require('../../scripts/dump-schema');
 
 async function seed() {
   try {
     await sequelize.sync({ force: true });
     console.log('Database synced.');
+
+    // Apply custom indexes (NULL-safe inventory unique, covering indexes)
+    await applyPostSyncIndexes(sequelize);
+    console.log('Custom indexes applied.');
 
     // ===== SaaS: Super Admin =====
     const [adminRole, managerRole, staffRole] = await Promise.all([
@@ -301,6 +307,16 @@ async function seed() {
     console.log('  Staff   -> staff@erp.local    / Staff@123');
     console.log('  URL: http://localhost:5173');
     console.log('\n  1 tenant (India), 7 products, 5 currencies, 19 tax rules.');
+
+    // Refresh canonical schema.sql so deploy artifacts stay in sync
+    try {
+      const { outPath, tableCount } = await dumpSchema();
+      const rel = require('path').relative(process.cwd(), outPath).replace(/\\/g, '/');
+      console.log(`\nSchema dumped to ${rel} (${tableCount} tables)`);
+    } catch (e) {
+      console.warn(`\nSchema dump skipped: ${e.message}`);
+    }
+
     process.exit(0);
   } catch (error) {
     console.error('Seeding failed:', error);

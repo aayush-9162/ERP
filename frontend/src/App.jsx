@@ -29,6 +29,7 @@ import QuotationCreatePage from './pages/quotations/QuotationCreatePage';
 import QuotationViewPage from './pages/quotations/QuotationViewPage';
 import CompaniesPage from './pages/companies/CompaniesPage';
 import TeamPage from './pages/companies/TeamPage';
+import SettingsPage from './pages/settings/SettingsPage';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/companies" element={<CompaniesPage />} />
             <Route path="/team" element={<ProtectedRoute roles={['admin']}><TeamPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/users" element={<ProtectedRoute roles={['admin', 'manager']}><UsersPage /></ProtectedRoute>} />
             <Route path="/company" element={<CompanyPage />} />
 
@@ -58,7 +60,7 @@ export default function App() {
             <Route path="/quotations/new" element={<QuotationCreatePage />} />
             <Route path="/quotations/:id" element={<QuotationViewPage />} />
 
-            <Route path="/purchases/new" element={<ProtectedRoute roles={['admin', 'manager']}><PurchaseEntryPage /></ProtectedRoute>} />
+            <Route path="/purchases/new" element={<PurchaseEntryPage />} />
             <Route path="/purchases" element={<PurchasesListPage />} />
             <Route path="/purchases/:id" element={<PurchaseViewPage />} />
             <Route path="/suppliers" element={<SuppliersPage />} />

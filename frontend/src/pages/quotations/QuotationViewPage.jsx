@@ -59,7 +59,7 @@ export default function QuotationViewPage() {
       <div id="printable-area" className="mx-auto max-w-3xl rounded-xl bg-white p-8 shadow-sm">
         <div className="mb-6 flex justify-between">
           <div><h1 className="text-2xl font-bold text-gray-900">{company?.name || 'ERP System'}</h1>{company && <p className="mt-1 text-xs text-gray-500">{company.address_line1}, {company.city} {company.pincode}</p>}</div>
-          <div className="text-right"><h2 className="text-xl font-bold text-primary-600">QUOTATION</h2><p className="mt-1 text-sm font-medium">{quo.quotation_number}</p><p className="text-xs text-gray-500">{new Date(quo.created_at).toLocaleDateString('en-IN', { dateStyle: 'long' })}</p><span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${badge[quo.status]}`}>{quo.status}</span></div>
+          <div className="text-right"><h2 className="text-xl font-bold text-primary-600">QUOTATION</h2><p className="mt-1 text-sm font-medium">{quo.quotation_number}</p><p className="text-xs text-gray-500">{quo.createdAt ? new Date(quo.createdAt).toLocaleDateString('en-IN', { dateStyle: 'long' }) : '-'}</p><span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${badge[quo.status]}`}>{quo.status}</span></div>
         </div>
 
         {quo.customer && <div className="mb-6 rounded-lg bg-gray-50 p-4"><p className="text-xs font-semibold uppercase text-gray-500">Customer</p><p className="mt-1 text-sm font-medium">{quo.customer.name}</p>{quo.customer.phone && <p className="text-xs text-gray-500">{quo.customer.phone}</p>}</div>}

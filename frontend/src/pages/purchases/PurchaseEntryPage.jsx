@@ -23,7 +23,7 @@ export default function PurchaseEntryPage() {
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
   const [showNewSupplier, setShowNewSupplier] = useState(false);
-  const [newSupplier, setNewSupplier] = useState({ name: '', phone: '' });
+  const [newSupplier, setNewSupplier] = useState({ name: '', phone: '', email: '', address: '' });
 
   // Checkout
   const [paymentMethod, setPaymentMethod] = useState('BANK');
@@ -96,10 +96,16 @@ export default function PurchaseEntryPage() {
   async function handleCreateSupplier() {
     if (!newSupplier.name.trim()) return;
     try {
-      const res = await createSupplierApi(newSupplier);
+      const payload = {
+        name: newSupplier.name.trim(),
+        phone: newSupplier.phone.trim() || undefined,
+        email: newSupplier.email.trim() || undefined,
+        address: newSupplier.address.trim() || undefined,
+      };
+      const res = await createSupplierApi(payload);
       setSelectedSupplier(res.data.data.supplier);
       setShowNewSupplier(false);
-      setNewSupplier({ name: '', phone: '' });
+      setNewSupplier({ name: '', phone: '', email: '', address: '' });
       toast.success('Supplier created');
     } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
   }
@@ -209,13 +215,21 @@ export default function PurchaseEntryPage() {
               <input value={supplierSearch} onChange={(e) => setSupplierSearch(e.target.value)}
                 onFocus={() => supplierResults.length > 0 && setShowSupplierDropdown(true)}
                 onBlur={() => setTimeout(() => setShowSupplierDropdown(false), 200)}
-                placeholder="Search supplier..." className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                placeholder="Search by name, phone, email, address..." className="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary-500" />
               {showSupplierDropdown && supplierResults.length > 0 && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white shadow-lg">
+                <div className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
                   {supplierResults.map((s) => (
                     <button key={s.id} onMouseDown={() => { setSelectedSupplier(s); setShowSupplierDropdown(false); setSupplierSearch(''); }}
-                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-primary-50">
-                      <span>{s.name}</span><span className="text-xs text-gray-400">{s.phone}</span>
+                      className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-primary-50">
+                      <div className="flex w-full items-center justify-between gap-2">
+                        <span className="truncate font-medium">{s.name}</span>
+                        {s.phone && <span className="flex-shrink-0 text-xs text-gray-400">{s.phone}</span>}
+                      </div>
+                      {(s.email || s.address) && (
+                        <span className="truncate text-xs text-gray-400">
+                          {[s.email, s.address].filter(Boolean).join(' • ')}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -229,9 +243,11 @@ export default function PurchaseEntryPage() {
           <div className="mb-4 rounded-lg border border-primary-200 bg-primary-50 p-3 space-y-2">
             <input value={newSupplier.name} onChange={(e) => setNewSupplier((p) => ({ ...p, name: e.target.value }))} placeholder="Supplier name *" className="w-full rounded border px-2 py-1.5 text-sm" />
             <input value={newSupplier.phone} onChange={(e) => setNewSupplier((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone" className="w-full rounded border px-2 py-1.5 text-sm" />
+            <input type="email" value={newSupplier.email} onChange={(e) => setNewSupplier((p) => ({ ...p, email: e.target.value }))} placeholder="Email" className="w-full rounded border px-2 py-1.5 text-sm" />
+            <textarea value={newSupplier.address} onChange={(e) => setNewSupplier((p) => ({ ...p, address: e.target.value }))} placeholder="Address" rows={2} className="w-full rounded border px-2 py-1.5 text-sm resize-none" />
             <div className="flex gap-2">
-              <button onClick={handleCreateSupplier} className="rounded bg-primary-600 px-3 py-1 text-xs text-white">Save</button>
-              <button onClick={() => setShowNewSupplier(false)} className="text-xs text-gray-500">Cancel</button>
+              <button onClick={handleCreateSupplier} className="rounded bg-primary-600 px-3 py-1 text-xs text-white hover:bg-primary-700">Save</button>
+              <button onClick={() => { setShowNewSupplier(false); setNewSupplier({ name: '', phone: '', email: '', address: '' }); }} className="text-xs text-gray-500">Cancel</button>
             </div>
           </div>
         )}

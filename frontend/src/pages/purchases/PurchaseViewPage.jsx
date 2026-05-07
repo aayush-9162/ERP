@@ -68,7 +68,7 @@ export default function PurchaseViewPage() {
           <div className="text-right">
             <h2 className="text-xl font-bold text-indigo-600">PURCHASE ORDER</h2>
             <p className="mt-1 text-sm font-medium">{purchase.purchase_number}</p>
-            <p className="text-xs text-gray-500">{new Date(purchase.created_at).toLocaleDateString('en-IN', { dateStyle: 'long' })}</p>
+            <p className="text-xs text-gray-500">{purchase.createdAt ? new Date(purchase.createdAt).toLocaleDateString('en-IN', { dateStyle: 'long' }) : '-'}</p>
             <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${purchase.payment_status === 'PAID' ? 'bg-green-50 text-green-700' : purchase.payment_status === 'PARTIAL' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>{purchase.payment_status}</span>
           </div>
         </div>
@@ -78,6 +78,8 @@ export default function PurchaseViewPage() {
           <div className="mt-1 text-sm">
             <p className="font-medium">{purchase.supplier?.name}</p>
             {purchase.supplier?.phone && <p className="text-gray-500">{purchase.supplier.phone}</p>}
+            {purchase.supplier?.email && <p className="text-gray-500">{purchase.supplier.email}</p>}
+            {purchase.supplier?.address && <p className="whitespace-pre-line text-gray-500">{purchase.supplier.address}</p>}
             {purchase.supplier?.gst_number && <p className="text-gray-500">GSTIN: {purchase.supplier.gst_number}</p>}
           </div>
         </div>
@@ -116,14 +118,16 @@ export default function PurchaseViewPage() {
             <p className="mb-2 text-xs font-semibold uppercase text-gray-500">Payment History</p>
             {purchase.payments.map((p) => (
               <div key={p.id} className="flex items-center justify-between text-sm text-gray-600">
-                <span>{new Date(p.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })} — {p.method} {p.reference ? `(${p.reference})` : ''}</span>
+                <span>{p.createdAt ? new Date(p.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '-'} — {p.method} {p.reference ? `(${p.reference})` : ''}</span>
                 <span className="font-medium">₹{Number(p.amount).toFixed(2)}</span>
               </div>
             ))}
           </div>
         )}
 
-        <div className="mt-6 border-t pt-4 text-xs text-gray-400">Created by: {purchase.createdBy?.first_name} {purchase.createdBy?.last_name}</div>
+        <div className="mt-6 border-t pt-4 text-xs text-gray-400">
+          Created by: {[purchase.createdBy?.first_name, purchase.createdBy?.last_name].filter(Boolean).join(' ') || 'Unknown'}
+        </div>
       </div>
 
       {canPay && purchase.payment_status !== 'PAID' && (

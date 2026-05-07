@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  HiOutlineHome, HiOutlineUsers, HiOutlineOfficeBuilding, HiOutlineLogout,
+  HiOutlineHome, HiOutlineUsers, HiOutlineOfficeBuilding,
   HiOutlineCube, HiOutlineClipboardList, HiOutlineSwitchHorizontal,
   HiOutlineShoppingCart, HiOutlineDocumentText, HiOutlineUserGroup,
   HiOutlineTruck, HiOutlineClipboardCheck, HiOutlineLibrary,
   HiOutlineChartBar, HiOutlineCash, HiOutlineCalculator, HiOutlineDocumentReport,
   HiOutlineDocumentDuplicate, HiOutlineReceiptTax, HiOutlineSelector,
-  HiOutlineCog, HiOutlineUserAdd,
+  HiOutlineCog,
 } from 'react-icons/hi';
 
 const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: HiOutlineHome },
+  { to: '/dashboard', label: 'Dashboard', icon: HiOutlineHome, roles: ['admin', 'manager'] },
   { to: '/team', label: 'Team', icon: HiOutlineUsers, roles: ['admin', 'manager'] },
-  { to: '/company', label: 'Company Profile', icon: HiOutlineOfficeBuilding },
+  { to: '/company', label: 'Company Profile', icon: HiOutlineOfficeBuilding, roles: ['admin', 'manager'] },
   { type: 'divider', label: 'Inventory' },
   { to: '/inventory', label: 'Overview', icon: HiOutlineClipboardList },
   { to: '/inventory/products', label: 'Products', icon: HiOutlineCube },
@@ -25,7 +25,7 @@ const navItems = [
   { to: '/quotations', label: 'Quotations', icon: HiOutlineDocumentDuplicate },
   { to: '/customers', label: 'Customers', icon: HiOutlineUserGroup },
   { type: 'divider', label: 'Purchases' },
-  { to: '/purchases/new', label: 'New Purchase', icon: HiOutlineTruck, roles: ['admin', 'manager'] },
+  { to: '/purchases/new', label: 'New Purchase', icon: HiOutlineTruck },
   { to: '/purchases', label: 'Purchase List', icon: HiOutlineClipboardCheck },
   { to: '/suppliers', label: 'Suppliers', icon: HiOutlineLibrary },
   { type: 'divider', label: 'Reports & Finance' },
@@ -35,10 +35,12 @@ const navItems = [
   { to: '/reports/customers', label: 'Customer Ledger', icon: HiOutlineUserGroup, roles: ['admin', 'manager'] },
   { to: '/reports/gst', label: 'GST Returns', icon: HiOutlineReceiptTax, roles: ['admin', 'manager'] },
   { to: '/reports/accounts', label: 'Accounts', icon: HiOutlineCalculator, roles: ['admin', 'manager'] },
+  { type: 'divider', label: 'System' },
+  { to: '/settings', label: 'Settings', icon: HiOutlineCog },
 ];
 
 export default function Sidebar() {
-  const { user, logout, companies, activeCompany, switchCompany } = useAuth();
+  const { user, companies, activeCompany, switchCompany } = useAuth();
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
 
   const linkClass = ({ isActive }) =>
@@ -91,25 +93,30 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
-        {navItems.filter((i) => !i.roles || i.roles.includes(user?.role?.name) || i.roles.includes(activeCompany?.role)).map((item, idx) =>
-          item.type === 'divider' ? (
-            <div key={idx} className="pb-1 pt-4"><p className="px-3 text-[10px] font-bold uppercase tracking-wider text-gray-500">{item.label}</p></div>
-          ) : (
-            <NavLink key={item.to} to={item.to} end={['/inventory', '/purchases', '/reports', '/quotations'].includes(item.to)} className={linkClass}>
-              <item.icon className="h-5 w-5 flex-shrink-0" />{item.label}
-            </NavLink>
-          )
-        )}
+        {(() => {
+          const role = activeCompany?.role || user?.role?.name;
+          const visible = navItems.filter((i) => !i.roles || i.roles.includes(role));
+          // Drop any divider that has no real nav item before the next divider
+          const cleaned = visible.filter((item, idx) => {
+            if (item.type !== 'divider') return true;
+            for (let i = idx + 1; i < visible.length; i++) {
+              if (visible[i].type === 'divider') return false;
+              return true;
+            }
+            return false;
+          });
+          return cleaned.map((item, idx) =>
+            item.type === 'divider' ? (
+              <div key={idx} className="pb-1 pt-4"><p className="px-3 text-[10px] font-bold uppercase tracking-wider text-gray-500">{item.label}</p></div>
+            ) : (
+              <NavLink key={item.to} to={item.to} end={['/inventory', '/purchases', '/reports', '/quotations'].includes(item.to)} className={linkClass}>
+                <item.icon className="h-5 w-5 flex-shrink-0" />{item.label}
+              </NavLink>
+            )
+          );
+        })()}
       </nav>
 
-      {/* User */}
-      <div className="border-t border-gray-700 px-4 py-3">
-        <div className="mb-2 flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-xs font-semibold">{user?.first_name?.[0]}{user?.last_name?.[0]}</div>
-          <div className="min-w-0"><p className="truncate text-sm font-medium">{user?.first_name} {user?.last_name}</p><p className="truncate text-xs text-gray-400 capitalize">{activeCompany?.role || user?.role?.name}</p></div>
-        </div>
-        <button onClick={logout} className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"><HiOutlineLogout className="h-4 w-4" /> Logout</button>
-      </div>
     </aside>
   );
 }

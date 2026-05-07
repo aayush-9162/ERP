@@ -11,5 +11,6 @@ router.put('/:id', ctrl.updateCompany);
 router.get('/:id/team', ctrl.getTeam);
 router.post('/:id/invite', ctrl.inviteUser);
 router.delete('/:id/team/:userId', ctrl.removeUser);
+router.post('/:id/team/:userId/reset-password', ctrl.resetMemberPassword);
 
 module.exports = router;

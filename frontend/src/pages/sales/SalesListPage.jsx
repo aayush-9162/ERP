@@ -105,6 +105,7 @@ export default function SalesListPage() {
                 <th className="px-5 py-3">Customer</th>
                 <th className="px-5 py-3 text-right">Amount</th>
                 <th className="px-5 py-3 text-right">Paid</th>
+                <th className="px-5 py-3 text-right">Due</th>
                 <th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3">Method</th>
                 <th className="px-5 py-3">By</th>
@@ -112,23 +113,29 @@ export default function SalesListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {sales.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50">
-                  <td className="px-5 py-3 font-medium font-mono text-xs">{s.invoice_number}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500">{new Date(s.created_at).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</td>
-                  <td className="px-5 py-3">{s.customer?.name || <span className="text-gray-400">Walk-in</span>}</td>
-                  <td className="px-5 py-3 text-right font-semibold tabular-nums">₹{Number(s.final_amount).toLocaleString('en-IN')}</td>
-                  <td className="px-5 py-3 text-right tabular-nums text-gray-500">₹{Number(s.paid_amount).toLocaleString('en-IN')}</td>
-                  <td className="px-5 py-3"><span className={statusBadge(s.payment_status)}>{s.payment_status}</span></td>
-                  <td className="px-5 py-3 text-xs text-gray-500">{s.payment_method || '-'}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500">{s.createdBy?.first_name}</td>
-                  <td className="px-5 py-3 text-right">
-                    <Link to={`/sales/${s.id}`} className="text-primary-600 hover:text-primary-700"><HiOutlineEye className="h-4 w-4" /></Link>
-                  </td>
-                </tr>
-              ))}
+              {sales.map((s) => {
+                const due = Math.max(0, parseFloat(s.final_amount) - parseFloat(s.paid_amount));
+                return (
+                  <tr key={s.id} className="hover:bg-gray-50">
+                    <td className="px-5 py-3 font-medium font-mono text-xs">{s.invoice_number}</td>
+                    <td className="px-5 py-3 text-xs text-gray-500">{s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : '-'}</td>
+                    <td className="px-5 py-3">{s.customer?.name || <span className="text-gray-400">Walk-in</span>}</td>
+                    <td className="px-5 py-3 text-right font-semibold tabular-nums">₹{Number(s.final_amount).toLocaleString('en-IN')}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-gray-500">₹{Number(s.paid_amount).toLocaleString('en-IN')}</td>
+                    <td className={`px-5 py-3 text-right tabular-nums font-medium ${due > 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                      {due > 0 ? `₹${due.toLocaleString('en-IN')}` : '-'}
+                    </td>
+                    <td className="px-5 py-3"><span className={statusBadge(s.payment_status)}>{s.payment_status}</span></td>
+                    <td className="px-5 py-3 text-xs text-gray-500">{s.payment_method || '-'}</td>
+                    <td className="px-5 py-3 text-xs text-gray-500">{s.createdBy?.first_name}</td>
+                    <td className="px-5 py-3 text-right">
+                      <Link to={`/sales/${s.id}`} className="text-primary-600 hover:text-primary-700"><HiOutlineEye className="h-4 w-4" /></Link>
+                    </td>
+                  </tr>
+                );
+              })}
               {sales.length === 0 && (
-                <tr><td colSpan="9" className="px-5 py-8 text-center text-gray-400">No sales found</td></tr>
+                <tr><td colSpan="10" className="px-5 py-8 text-center text-gray-400">No sales found</td></tr>
               )}
             </tbody>
           </table>

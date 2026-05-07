@@ -28,14 +28,20 @@ async function getSuppliers(req, res, next) {
 async function searchSuppliers(req, res, next) {
   try {
     const q = req.query.q || '';
+    const where = {
+      company_id: req.companyId,
+      status: 'active',
+    };
+    if (q.trim()) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${q}%` } },
+        { phone: { [Op.like]: `%${q}%` } },
+        { email: { [Op.like]: `%${q}%` } },
+        { address: { [Op.like]: `%${q}%` } },
+      ];
+    }
     const suppliers = await Supplier.findAll({
-      where: {
-        status: 'active',
-        [Op.or]: [
-          { name: { [Op.like]: `%${q}%` } },
-          { phone: { [Op.like]: `%${q}%` } },
-        ],
-      },
+      where,
       limit: 10,
       order: [['name', 'ASC']],
     });
@@ -54,7 +60,10 @@ async function getSupplier(req, res, next) {
 async function createSupplier(req, res, next) {
   try {
     const { name, phone, email, address, gst_number } = req.body;
-    const supplier = await Supplier.create({ name, phone, email, address, gst_number });
+    const supplier = await Supplier.create({
+      name, phone, email, address, gst_number,
+      company_id: req.companyId,
+    });
     ApiResponse.created(res, { supplier });
   } catch (error) { next(error); }
 }

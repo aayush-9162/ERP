@@ -64,7 +64,7 @@ export default function QuotationsListPage() {
               {quotations.map((q) => (
                 <tr key={q.id} className="hover:bg-gray-50">
                   <td className="px-5 py-3 font-mono text-xs font-medium">{q.quotation_number}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500">{new Date(q.created_at).toLocaleDateString('en-IN')}</td>
+                  <td className="px-5 py-3 text-xs text-gray-500">{q.createdAt ? new Date(q.createdAt).toLocaleDateString('en-IN') : '-'}</td>
                   <td className="px-5 py-3">{q.customer?.name || <span className="text-gray-400">No customer</span>}</td>
                   <td className="px-5 py-3 text-right font-semibold tabular-nums">₹{Number(q.final_amount).toLocaleString('en-IN')}</td>
                   <td className="px-5 py-3"><span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge(q.status)}`}>{q.status}</span></td>

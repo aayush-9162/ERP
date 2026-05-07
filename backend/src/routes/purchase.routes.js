@@ -9,7 +9,7 @@ const { ROLES } = require('../config/constants');
 router.get('/summary', ctrl.getPurchaseSummary);
 router.get('/', ctrl.getPurchases);
 router.get('/:id', ctrl.getPurchase);
-router.post('/', authorize(ROLES.ADMIN, ROLES.MANAGER), validate(createPurchaseValidation), ctrl.createPurchase);
+router.post('/', authorize(ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF), validate(createPurchaseValidation), ctrl.createPurchase);
 
 router.get('/:id/payments', ctrl.getPayments);
 router.post('/:id/payments', authorize(ROLES.ADMIN, ROLES.MANAGER), validate(supplierPaymentValidation), ctrl.addPayment);

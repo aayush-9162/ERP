@@ -46,7 +46,7 @@ class PurchaseService {
     const transaction = await sequelize.transaction();
 
     try {
-      const { supplier_id, items, discount_amount = 0, paid_amount = 0, payment_method, payments: paymentSplits, notes } = data;
+      const { company_id, supplier_id, items, discount_amount = 0, paid_amount = 0, payment_method, payments: paymentSplits, notes } = data;
 
       if (!items || items.length === 0) {
         throw ApiError.badRequest('At least one item is required');
@@ -120,6 +120,7 @@ class PurchaseService {
       const purchaseNumber = await PurchaseService._generatePurchaseNumber(transaction);
 
       const purchase = await Purchase.create({
+        company_id,
         purchase_number: purchaseNumber,
         supplier_id,
         total_amount: subtotal,
@@ -264,8 +265,9 @@ class PurchaseService {
   /**
    * Purchase summary for dashboard.
    * Single query with conditional aggregation — 1 table scan instead of 3.
+   * Scopes by company_id when provided (super-admin can pass null for global).
    */
-  static async getPurchaseSummary() {
+  static async getPurchaseSummary(companyId = null) {
     const [[row]] = await sequelize.query(`
       SELECT
         COUNT(*) AS total_count,
@@ -273,9 +275,10 @@ class PurchaseService {
         SUM(CASE WHEN created_at >= CURDATE() THEN 1 ELSE 0 END) AS today_count,
         COALESCE(SUM(CASE WHEN created_at >= CURDATE() THEN final_amount ELSE 0 END), 0) AS today_spent,
         SUM(CASE WHEN payment_status != 'PAID' THEN 1 ELSE 0 END) AS unpaid_count,
-        COALESCE(SUM(CASE WHEN payment_status != 'PAID' THEN final_amount ELSE 0 END), 0) AS unpaid_amount
+        COALESCE(SUM(CASE WHEN payment_status != 'PAID' THEN (final_amount - paid_amount) ELSE 0 END), 0) AS unpaid_amount
       FROM purchases
-    `);
+      ${companyId ? 'WHERE company_id = :cid' : ''}
+    `, { replacements: { cid: companyId } });
 
     return {
       total_purchases: parseInt(row.total_count) || 0,

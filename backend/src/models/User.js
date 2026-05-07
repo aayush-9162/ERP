@@ -47,6 +47,11 @@ const User = sequelize.define('User', {
     defaultValue: false,
     comment: 'Platform-level super admin (SaaS owner)',
   },
+  must_change_password: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Force password change on next login (set after admin reset / invite)',
+  },
   tenant_id: {
     type: DataTypes.INTEGER,
     allowNull: true,

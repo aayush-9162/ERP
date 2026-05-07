@@ -59,7 +59,7 @@ async function getPurchase(req, res, next) {
 
 async function getPurchaseSummary(req, res, next) {
   try {
-    const summary = await PurchaseService.getPurchaseSummary();
+    const summary = await PurchaseService.getPurchaseSummary(req.companyId);
     ApiResponse.success(res, { summary });
   } catch (error) { next(error); }
 }

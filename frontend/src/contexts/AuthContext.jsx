@@ -63,6 +63,12 @@ export function AuthProvider({ children }) {
     window.location.reload(); // Reload to refetch all data for new company
   }
 
+  async function refreshProfile() {
+    const res = await getProfileApi();
+    setUser(res.data.data.user);
+    return res.data.data.user;
+  }
+
   function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -77,7 +83,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, loading, login, logout,
+      user, loading, login, logout, refreshProfile,
       companies, activeCompany, switchCompany,
       isAdmin, isManager,
     }}>

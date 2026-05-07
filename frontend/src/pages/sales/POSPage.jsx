@@ -57,7 +57,7 @@ export default function POSPage() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [showNewCustomer, setShowNewCustomer] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({ name: '', phone: '' });
+  const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', email: '', address: '' });
 
   // Checkout
   const [paymentMethod, setPaymentMethod] = useState('CASH');
@@ -138,10 +138,16 @@ export default function POSPage() {
   async function handleCreateCustomer() {
     if (!newCustomer.name.trim()) return;
     try {
-      const res = await createCustomerApi(newCustomer);
+      const payload = {
+        name: newCustomer.name.trim(),
+        phone: newCustomer.phone.trim() || undefined,
+        email: newCustomer.email.trim() || undefined,
+        address: newCustomer.address.trim() || undefined,
+      };
+      const res = await createCustomerApi(payload);
       setSelectedCustomer(res.data.data.customer);
       setShowNewCustomer(false);
-      setNewCustomer({ name: '', phone: '' });
+      setNewCustomer({ name: '', phone: '', email: '', address: '' });
       toast.success('Customer created');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed');
@@ -282,16 +288,23 @@ export default function POSPage() {
                 onChange={(e) => setCustomerSearch(e.target.value)}
                 onFocus={() => customerResults.length > 0 && setShowCustomerDropdown(true)}
                 onBlur={() => setTimeout(() => setShowCustomerDropdown(false), 200)}
-                placeholder="Search or walk-in..."
+                placeholder="Search by name, phone, email, address..."
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500"
               />
               {showCustomerDropdown && customerResults.length > 0 && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white shadow-lg">
+                <div className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
                   {customerResults.map((c) => (
                     <button key={c.id} onMouseDown={() => { setSelectedCustomer(c); setShowCustomerDropdown(false); setCustomerSearch(''); }}
-                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-primary-50">
-                      <span>{c.name}</span>
-                      <span className="text-xs text-gray-400">{c.phone}</span>
+                      className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-primary-50">
+                      <div className="flex w-full items-center justify-between gap-2">
+                        <span className="truncate font-medium">{c.name}</span>
+                        {c.phone && <span className="flex-shrink-0 text-xs text-gray-400">{c.phone}</span>}
+                      </div>
+                      {(c.email || c.address) && (
+                        <span className="truncate text-xs text-gray-400">
+                          {[c.email, c.address].filter(Boolean).join(' • ')}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -306,9 +319,11 @@ export default function POSPage() {
           <div className="mb-4 rounded-lg border border-primary-200 bg-primary-50 p-3 space-y-2">
             <input value={newCustomer.name} onChange={(e) => setNewCustomer((p) => ({ ...p, name: e.target.value }))} placeholder="Customer name *" className="w-full rounded border px-2 py-1.5 text-sm" />
             <input value={newCustomer.phone} onChange={(e) => setNewCustomer((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone" className="w-full rounded border px-2 py-1.5 text-sm" />
+            <input type="email" value={newCustomer.email} onChange={(e) => setNewCustomer((p) => ({ ...p, email: e.target.value }))} placeholder="Email" className="w-full rounded border px-2 py-1.5 text-sm" />
+            <textarea value={newCustomer.address} onChange={(e) => setNewCustomer((p) => ({ ...p, address: e.target.value }))} placeholder="Address" rows={2} className="w-full rounded border px-2 py-1.5 text-sm resize-none" />
             <div className="flex gap-2">
               <button onClick={handleCreateCustomer} className="rounded bg-primary-600 px-3 py-1 text-xs text-white hover:bg-primary-700">Save</button>
-              <button onClick={() => setShowNewCustomer(false)} className="text-xs text-gray-500">Cancel</button>
+              <button onClick={() => { setShowNewCustomer(false); setNewCustomer({ name: '', phone: '', email: '', address: '' }); }} className="text-xs text-gray-500">Cancel</button>
             </div>
           </div>
         )}

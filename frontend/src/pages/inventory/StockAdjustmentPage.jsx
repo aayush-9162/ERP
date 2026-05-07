@@ -164,7 +164,7 @@ export default function StockAdjustmentPage() {
                   {movements.map((m) => (
                     <tr key={m.id} className="hover:bg-gray-50">
                       <td className="px-5 py-3 text-xs text-gray-500">
-                        {new Date(m.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
+                        {m.createdAt ? new Date(m.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '-'}
                       </td>
                       <td className="px-5 py-3">
                         <span className="font-medium">{m.product?.name}</span>

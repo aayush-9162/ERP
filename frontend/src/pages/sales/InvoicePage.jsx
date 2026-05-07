@@ -88,7 +88,7 @@ export default function InvoicePage() {
           <div className="text-right">
             <h2 className="text-xl font-bold text-primary-600">INVOICE</h2>
             <p className="mt-1 text-sm font-medium">{sale.invoice_number}</p>
-            <p className="text-xs text-gray-500">{new Date(sale.created_at).toLocaleDateString('en-IN', { dateStyle: 'long' })}</p>
+            <p className="text-xs text-gray-500">{sale.createdAt ? new Date(sale.createdAt).toLocaleDateString('en-IN', { dateStyle: 'long' }) : '-'}</p>
             <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${sale.payment_status === 'PAID' ? 'bg-green-50 text-green-700' : sale.payment_status === 'PARTIAL' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>{sale.payment_status}</span>
             {sale.e_invoice_status === 'GENERATED' && <p className="mt-1 text-[10px] text-green-600 font-medium">E-Invoice Generated</p>}
           </div>
@@ -96,7 +96,17 @@ export default function InvoicePage() {
 
         <div className="mb-6 rounded-lg bg-gray-50 p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Bill To</p>
-          {sale.customer ? <div className="mt-1 text-sm"><p className="font-medium">{sale.customer.name}</p>{sale.customer.phone && <p className="text-gray-500">{sale.customer.phone}</p>}{sale.customer.gst_number && <p className="text-gray-500">GSTIN: {sale.customer.gst_number}</p>}</div> : <p className="mt-1 text-sm text-gray-500">Walk-in Customer</p>}
+          {sale.customer ? (
+            <div className="mt-1 text-sm">
+              <p className="font-medium">{sale.customer.name}</p>
+              {sale.customer.phone && <p className="text-gray-500">{sale.customer.phone}</p>}
+              {sale.customer.email && <p className="text-gray-500">{sale.customer.email}</p>}
+              {sale.customer.address && <p className="whitespace-pre-line text-gray-500">{sale.customer.address}</p>}
+              {sale.customer.gst_number && <p className="text-gray-500">GSTIN: {sale.customer.gst_number}</p>}
+            </div>
+          ) : (
+            <p className="mt-1 text-sm text-gray-500">Walk-in Customer</p>
+          )}
         </div>
 
         <table className="mb-6 w-full text-sm">
@@ -121,12 +131,17 @@ export default function InvoicePage() {
 
         {sale.payments?.length > 0 && (
           <div className="mt-6 border-t pt-4"><p className="mb-2 text-xs font-semibold uppercase text-gray-500">Payment History</p>
-            {sale.payments.map((p) => (<div key={p.id} className="flex items-center justify-between text-sm text-gray-600"><span>{new Date(p.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })} — {p.method}</span><span className="font-medium">₹{Number(p.amount).toFixed(2)}</span></div>))}
+            {sale.payments.map((p) => (<div key={p.id} className="flex items-center justify-between text-sm text-gray-600"><span>{p.createdAt ? new Date(p.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '-'} — {p.method}</span><span className="font-medium">₹{Number(p.amount).toFixed(2)}</span></div>))}
           </div>
         )}
 
         {sale.irn && <div className="mt-4 border-t pt-3"><p className="text-[10px] text-gray-400">IRN: {sale.irn}</p></div>}
-        <div className="mt-4 border-t pt-4 text-xs text-gray-400">Created by: {sale.createdBy?.first_name} {sale.createdBy?.last_name}</div>
+        <div className="mt-4 border-t pt-4 text-xs text-gray-400">
+          Created by: {[sale.createdBy?.first_name, sale.createdBy?.last_name].filter(Boolean).join(' ') || sale.createdBy?.email || 'Unknown'}
+          {sale.createdBy?.email && (sale.createdBy?.first_name || sale.createdBy?.last_name) && (
+            <span className="ml-1">({sale.createdBy.email})</span>
+          )}
+        </div>
       </div>
 
       {/* Payment form */}

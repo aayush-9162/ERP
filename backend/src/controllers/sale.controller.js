@@ -61,7 +61,7 @@ async function getSale(req, res, next) {
         { model: SaleItem, as: 'items' },
         { model: Customer, as: 'customer' },
         { model: Payment, as: 'payments' },
-        { model: User, as: 'createdBy', attributes: ['id', 'first_name', 'last_name'] },
+        { model: User, as: 'createdBy', attributes: ['id', 'first_name', 'last_name', 'email'] },
       ],
     });
     if (!sale) throw ApiError.notFound('Sale not found');
@@ -74,7 +74,7 @@ async function getSale(req, res, next) {
 // GET /api/sales/summary
 async function getSalesSummary(req, res, next) {
   try {
-    const summary = await SalesService.getSalesSummary();
+    const summary = await SalesService.getSalesSummary(req.companyId);
     ApiResponse.success(res, { summary });
   } catch (error) {
     next(error);

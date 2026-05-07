@@ -102,4 +102,51 @@ async function getProfile(req, res, next) {
   }
 }
 
-module.exports = { register, login, getProfile };
+// PUT /api/auth/profile — update logged-in user's own profile
+async function updateProfile(req, res, next) {
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) throw ApiError.unauthorized('User not found');
+
+    const allowed = ['first_name', 'last_name', 'phone'];
+    const updates = {};
+    for (const k of allowed) {
+      if (req.body[k] !== undefined) updates[k] = req.body[k];
+    }
+
+    if (Object.keys(updates).length === 0) {
+      throw ApiError.badRequest('No fields to update');
+    }
+
+    await user.update(updates);
+    ApiResponse.success(res, { user }, 'Profile updated');
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /api/auth/change-password
+async function changePassword(req, res, next) {
+  try {
+    const { current_password, new_password } = req.body;
+
+    const user = await User.findByPk(req.user.id);
+    if (!user) throw ApiError.unauthorized('User not found');
+
+    if (!(await user.validatePassword(current_password))) {
+      throw ApiError.unauthorized('Current password is incorrect');
+    }
+
+    if (await user.validatePassword(new_password)) {
+      throw ApiError.badRequest('New password must be different from the current password');
+    }
+
+    await user.update({ password: new_password, must_change_password: false });
+
+    ApiResponse.success(res, null, 'Password changed successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { register, login, getProfile, updateProfile, changePassword };

@@ -59,7 +59,7 @@ export default function PurchasesListPage() {
               {purchases.map((p) => (
                 <tr key={p.id} className="hover:bg-gray-50">
                   <td className="px-5 py-3 font-mono text-xs font-medium">{p.purchase_number}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500">{new Date(p.created_at).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</td>
+                  <td className="px-5 py-3 text-xs text-gray-500">{p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : '-'}</td>
                   <td className="px-5 py-3">{p.supplier?.name}</td>
                   <td className="px-5 py-3 text-right font-semibold tabular-nums">₹{Number(p.final_amount).toLocaleString('en-IN')}</td>
                   <td className="px-5 py-3 text-right tabular-nums text-gray-500">₹{Number(p.paid_amount).toLocaleString('en-IN')}</td>

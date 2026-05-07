@@ -68,7 +68,7 @@ export default function AccountsPage() {
                   <tbody className="divide-y divide-gray-100">
                     {transactions.map((t) => (
                       <tr key={t.id} className="hover:bg-gray-50">
-                        <td className="px-5 py-2.5 text-xs text-gray-500">{new Date(t.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                        <td className="px-5 py-2.5 text-xs text-gray-500">{t.createdAt ? new Date(t.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '-'}</td>
                         <td className="px-5 py-2.5">{t.description}</td>
                         <td className="px-5 py-2.5">
                           <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${t.type === 'DEBIT' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}`}>{t.type}</span>

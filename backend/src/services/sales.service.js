@@ -47,7 +47,7 @@ class SalesService {
     const transaction = await sequelize.transaction();
 
     try {
-      const { items, customer_id, discount_amount = 0, payment_method, paid_amount = 0, payments: paymentSplits, notes } = data;
+      const { company_id, items, customer_id, discount_amount = 0, payment_method, paid_amount = 0, payments: paymentSplits, notes } = data;
 
       if (!items || items.length === 0) {
         throw ApiError.badRequest('At least one item is required');
@@ -135,6 +135,7 @@ class SalesService {
       const invoiceNumber = await SalesService._generateInvoiceNumber(transaction);
 
       const sale = await Sale.create({
+        company_id,
         invoice_number: invoiceNumber,
         customer_id: customer_id || null,
         total_amount: subtotal,
@@ -267,8 +268,9 @@ class SalesService {
   /**
    * Sales summary stats for dashboard.
    * Single query with conditional aggregation — 1 table scan instead of 3.
+   * Scopes by company_id when provided (super-admin can pass null for global).
    */
-  static async getSalesSummary() {
+  static async getSalesSummary(companyId = null) {
     const [[row]] = await sequelize.query(`
       SELECT
         COUNT(*) AS total_count,
@@ -276,9 +278,10 @@ class SalesService {
         SUM(CASE WHEN created_at >= CURDATE() THEN 1 ELSE 0 END) AS today_count,
         COALESCE(SUM(CASE WHEN created_at >= CURDATE() THEN final_amount ELSE 0 END), 0) AS today_revenue,
         SUM(CASE WHEN payment_status != 'PAID' THEN 1 ELSE 0 END) AS unpaid_count,
-        COALESCE(SUM(CASE WHEN payment_status != 'PAID' THEN final_amount ELSE 0 END), 0) AS unpaid_amount
+        COALESCE(SUM(CASE WHEN payment_status != 'PAID' THEN (final_amount - paid_amount) ELSE 0 END), 0) AS unpaid_amount
       FROM sales
-    `);
+      ${companyId ? 'WHERE company_id = :cid' : ''}
+    `, { replacements: { cid: companyId } });
 
     return {
       total_invoices: parseInt(row.total_count) || 0,

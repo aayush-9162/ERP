@@ -7,3 +7,4 @@ export const switchCompanyApi = (company_id) => api.post('/companies/switch', { 
 export const getTeamApi = (companyId) => api.get(`/companies/${companyId}/team`);
 export const inviteUserApi = (companyId, data) => api.post(`/companies/${companyId}/invite`, data);
 export const removeUserApi = (companyId, userId) => api.delete(`/companies/${companyId}/team/${userId}`);
+export const resetMemberPasswordApi = (companyId, userId) => api.post(`/companies/${companyId}/team/${userId}/reset-password`);

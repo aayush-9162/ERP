@@ -372,7 +372,7 @@ async function resetUserPassword(req, res, next) {
     if (user.is_super_admin) throw ApiError.forbidden('Cannot reset super admin password from here');
 
     const tempPassword = 'Welcome@123';
-    await user.update({ password: tempPassword });
+    await user.update({ password: tempPassword, must_change_password: true });
 
     ApiResponse.success(res, { email: user.email, temp_password: tempPassword }, 'Password reset');
   } catch (error) {

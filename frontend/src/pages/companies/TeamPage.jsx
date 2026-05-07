@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { getTeamApi, inviteUserApi, removeUserApi } from '../../api/companies.api';
+import { getTeamApi, inviteUserApi, removeUserApi, resetMemberPasswordApi } from '../../api/companies.api';
 import { getRolesApi } from '../../api/roles.api';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { HiOutlinePlus, HiOutlineTrash, HiOutlinePencil, HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlineTrash, HiOutlinePencil, HiOutlineBan, HiOutlineCheckCircle, HiOutlineKey } from 'react-icons/hi';
 
 export default function TeamPage() {
-  const { activeCompany, isAdmin, isManager } = useAuth();
+  const { activeCompany, user: currentUser, isAdmin, isManager } = useAuth();
   const canManage = isAdmin || isManager;
+  const [resetResult, setResetResult] = useState(null);
 
   const [members, setMembers] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -83,6 +84,16 @@ export default function TeamPage() {
       fetchTeam();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed');
+    }
+  }
+
+  async function handleResetPassword(userId, email) {
+    if (!confirm(`Reset password for ${email}? They will need the new temporary password to log in.`)) return;
+    try {
+      const res = await resetMemberPasswordApi(activeCompany.id, userId);
+      setResetResult({ email, tempPassword: res.data.data.temp_password });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reset password');
     }
   }
 
@@ -194,28 +205,39 @@ export default function TeamPage() {
                   </span>
                 </td>
                 <td className="px-5 py-3 text-xs text-gray-500">
-                  {new Date(m.created_at).toLocaleDateString('en-IN')}
+                  {m.createdAt ? new Date(m.createdAt).toLocaleDateString('en-IN') : '-'}
                 </td>
                 {canManage && (
                   <td className="px-5 py-3 text-right">
-                    {m.status === 'active' && (
-                      <button
-                        onClick={() => handleRemove(m.user?.id)}
-                        className="text-gray-400 hover:text-red-600"
-                        title="Remove from company"
-                      >
-                        <HiOutlineBan className="h-4 w-4" />
-                      </button>
-                    )}
-                    {m.status === 'removed' && (
-                      <button
-                        onClick={() => handleReactivate(m.user?.id)}
-                        className="text-gray-400 hover:text-green-600"
-                        title="Reactivate"
-                      >
-                        <HiOutlineCheckCircle className="h-4 w-4" />
-                      </button>
-                    )}
+                    <div className="flex items-center justify-end gap-2">
+                      {isAdmin && m.status === 'active' && m.user?.id !== currentUser?.id && (
+                        <button
+                          onClick={() => handleResetPassword(m.user?.id, m.user?.email)}
+                          className="text-gray-400 hover:text-primary-600"
+                          title="Reset password"
+                        >
+                          <HiOutlineKey className="h-4 w-4" />
+                        </button>
+                      )}
+                      {m.status === 'active' && (
+                        <button
+                          onClick={() => handleRemove(m.user?.id)}
+                          className="text-gray-400 hover:text-red-600"
+                          title="Remove from company"
+                        >
+                          <HiOutlineBan className="h-4 w-4" />
+                        </button>
+                      )}
+                      {m.status === 'removed' && (
+                        <button
+                          onClick={() => handleReactivate(m.user?.id)}
+                          className="text-gray-400 hover:text-green-600"
+                          title="Reactivate"
+                        >
+                          <HiOutlineCheckCircle className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 )}
               </tr>
@@ -230,6 +252,21 @@ export default function TeamPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Password reset result modal */}
+      {resetResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="mb-2 text-lg font-semibold text-green-700">Password Reset</h2>
+            <div className="mb-4 rounded-lg bg-green-50 p-4 text-sm">
+              <p>Password reset for <strong>{resetResult.email}</strong></p>
+              <p className="mt-2">New temporary password: <code className="rounded bg-gray-100 px-2 py-0.5 font-mono text-primary-700">{resetResult.tempPassword}</code></p>
+              <p className="mt-2 text-xs text-gray-500">Share this with the user securely. They should change it after logging in.</p>
+            </div>
+            <button onClick={() => setResetResult(null)} className="w-full rounded-lg bg-primary-600 py-2 text-sm font-medium text-white hover:bg-primary-700">Done</button>
+          </div>
+        </div>
+      )}
 
       {/* Invite / Add Member modal */}
       {showInvite && (

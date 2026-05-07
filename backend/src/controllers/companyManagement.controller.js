@@ -116,6 +116,7 @@ async function inviteUser(req, res, next) {
         phone: phone || null,
         role_id: role.id,
         status: 'active',
+        must_change_password: true,
       });
       isNewUser = true;
     }
@@ -163,6 +164,40 @@ async function removeUser(req, res, next) {
   } catch (error) { next(error); }
 }
 
+// POST /api/companies/:id/team/:userId/reset-password — admin resets a member's password
+async function resetMemberPassword(req, res, next) {
+  try {
+    const companyId = parseInt(req.params.id, 10);
+    const userId = parseInt(req.params.userId, 10);
+
+    const callerMembership = await UserCompany.findOne({
+      where: { user_id: req.user.id, company_id: companyId, status: 'active' },
+      include: [{ association: 'role' }],
+    });
+    if (!callerMembership || callerMembership.role.name !== 'admin') {
+      throw ApiError.forbidden('Only company admin can reset passwords');
+    }
+
+    if (userId === req.user.id) {
+      throw ApiError.badRequest('Use your profile to change your own password');
+    }
+
+    const targetMembership = await UserCompany.findOne({
+      where: { user_id: userId, company_id: companyId },
+    });
+    if (!targetMembership) throw ApiError.notFound('User not in this company');
+
+    const user = await User.findByPk(userId);
+    if (!user) throw ApiError.notFound('User not found');
+    if (user.is_super_admin) throw ApiError.forbidden('Cannot reset super admin password');
+
+    const tempPassword = 'Welcome@123';
+    await user.update({ password: tempPassword, must_change_password: true });
+
+    ApiResponse.success(res, { email: user.email, temp_password: tempPassword }, 'Password reset');
+  } catch (error) { next(error); }
+}
+
 // POST /api/companies/switch — switch active company (returns updated token context)
 async function switchCompany(req, res, next) {
   try {
@@ -181,4 +216,4 @@ async function switchCompany(req, res, next) {
   } catch (error) { next(error); }
 }
 
-module.exports = { getMyCompanies, createCompany, updateCompany, getTeam, inviteUser, removeUser, switchCompany };
+module.exports = { getMyCompanies, createCompany, updateCompany, getTeam, inviteUser, removeUser, resetMemberPassword, switchCompany };

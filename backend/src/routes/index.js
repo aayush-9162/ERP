@@ -26,6 +26,8 @@ router.use('/sales', require('./sale.routes'));
 router.use('/suppliers', require('./supplier.routes'));
 router.use('/purchases', require('./purchase.routes'));
 router.use('/reports', require('./reports.routes'));
+router.use('/payments', require('./payments.routes'));
+router.use('/day-closing', require('./dayClosing.routes'));
 router.use('/accounting', require('./accounting.routes'));
 router.use('/quotations', require('./quotation.routes'));
 router.use('/gst', require('./gst.routes'));

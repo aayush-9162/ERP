@@ -64,6 +64,17 @@ const Sale = sequelize.define('Sale', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  // Address snapshots at sale time — editing the customer later does NOT change these
+  billing_address: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Snapshot of billing address at time of sale',
+  },
+  delivery_address: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Snapshot of delivery address at time of sale. NULL = same as billing.',
+  },
   // E-invoicing fields
   irn: {
     type: DataTypes.STRING(64),

@@ -27,6 +27,12 @@ const Customer = sequelize.define('Customer', {
   address: {
     type: DataTypes.TEXT,
     allowNull: true,
+    comment: 'Billing address',
+  },
+  delivery_address: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Shipping address. NULL or empty = same as billing.',
   },
   gst_number: {
     type: DataTypes.STRING(15),

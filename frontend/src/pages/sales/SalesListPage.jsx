@@ -83,8 +83,8 @@ export default function SalesListPage() {
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-3">
-        <input type="text" placeholder="Search by invoice number..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-xs rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100" />
+        <input type="text" placeholder="Search by invoice, customer name, phone or email..." value={search} onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-md rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100" />
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500">
           <option value="">All Status</option>

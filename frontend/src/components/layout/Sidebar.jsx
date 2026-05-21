@@ -8,7 +8,7 @@ import {
   HiOutlineTruck, HiOutlineClipboardCheck, HiOutlineLibrary,
   HiOutlineChartBar, HiOutlineCash, HiOutlineCalculator, HiOutlineDocumentReport,
   HiOutlineDocumentDuplicate, HiOutlineReceiptTax, HiOutlineSelector,
-  HiOutlineCog,
+  HiOutlineCog, HiOutlineChevronDoubleLeft,
 } from 'react-icons/hi';
 
 const navItems = [
@@ -29,6 +29,8 @@ const navItems = [
   { to: '/purchases', label: 'Purchase List', icon: HiOutlineClipboardCheck },
   { to: '/suppliers', label: 'Suppliers', icon: HiOutlineLibrary },
   { type: 'divider', label: 'Reports & Finance' },
+  { to: '/payments', label: 'Payments', icon: HiOutlineCash, roles: ['admin', 'manager'] },
+  { to: '/day-closing', label: 'Day Closing', icon: HiOutlineClipboardCheck, roles: ['admin', 'manager'] },
   { to: '/reports', label: 'Overview', icon: HiOutlineChartBar, roles: ['admin', 'manager'] },
   { to: '/reports/profit-loss', label: 'Profit & Loss', icon: HiOutlineCash, roles: ['admin', 'manager'] },
   { to: '/reports/inventory', label: 'Stock Valuation', icon: HiOutlineDocumentReport, roles: ['admin', 'manager'] },
@@ -39,7 +41,7 @@ const navItems = [
   { to: '/settings', label: 'Settings', icon: HiOutlineCog },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const { user, companies, activeCompany, switchCompany } = useAuth();
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
 
@@ -50,10 +52,10 @@ export default function Sidebar() {
     <aside className="flex h-screen w-64 flex-col bg-gray-900 text-white print:hidden">
       {/* Company switcher */}
       <div className="border-b border-gray-700 px-3 py-3">
-        <div className="relative">
+        <div className="relative flex items-center gap-2">
           <button
             onClick={() => setShowCompanyMenu(!showCompanyMenu)}
-            className="flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2.5 text-left hover:bg-gray-750 transition-colors"
+            className="flex min-w-0 flex-1 items-center justify-between rounded-lg bg-gray-800 px-3 py-2.5 text-left hover:bg-gray-750 transition-colors"
           >
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{activeCompany?.name || 'Select Company'}</p>
@@ -61,6 +63,15 @@ export default function Sidebar() {
             </div>
             <HiOutlineSelector className="h-5 w-5 flex-shrink-0 text-gray-400" />
           </button>
+          {onClose && (
+            <button
+              onClick={onClose}
+              title="Hide sidebar"
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+            >
+              <HiOutlineChevronDoubleLeft className="h-4 w-4" />
+            </button>
+          )}
 
           {showCompanyMenu && (
             <>

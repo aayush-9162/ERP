@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { HiOutlinePlus, HiOutlinePencil } from 'react-icons/hi';
 
-const EMPTY = { name: '', phone: '', email: '', address: '', gst_number: '' };
+const EMPTY = { name: '', phone: '', email: '', address: '', delivery_address: '', gst_number: '' };
 
 export default function CustomersPage() {
   const { isAdmin, isManager } = useAuth();
@@ -33,7 +33,14 @@ export default function CustomersPage() {
   function openCreate() { setEditing(null); setForm(EMPTY); setShowModal(true); }
   function openEdit(c) {
     setEditing(c);
-    setForm({ name: c.name, phone: c.phone || '', email: c.email || '', address: c.address || '', gst_number: c.gst_number || '' });
+    setForm({
+      name: c.name,
+      phone: c.phone || '',
+      email: c.email || '',
+      address: c.address || '',
+      delivery_address: c.delivery_address || '',
+      gst_number: c.gst_number || '',
+    });
     setShowModal(true);
   }
 
@@ -146,8 +153,30 @@ export default function CustomersPage() {
                 <input value={form.gst_number} onChange={(e) => set('gst_number', e.target.value)} placeholder="e.g. 27AAPFU0939F1ZV" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500" />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Address</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Billing Address</label>
                 <textarea value={form.address} onChange={(e) => set('address', e.target.value)} rows={2} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+              </div>
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="block text-sm font-medium text-gray-700">Delivery Address</label>
+                  <label className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <input
+                      type="checkbox"
+                      checked={!form.delivery_address}
+                      onChange={(e) => set('delivery_address', e.target.checked ? '' : (form.address || ' '))}
+                      className="h-3.5 w-3.5 rounded"
+                    />
+                    Same as billing
+                  </label>
+                </div>
+                <textarea
+                  value={form.delivery_address}
+                  onChange={(e) => set('delivery_address', e.target.value)}
+                  placeholder={form.delivery_address ? '' : 'Uses billing address by default'}
+                  rows={2}
+                  disabled={!form.delivery_address}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:bg-gray-50 disabled:text-gray-400"
+                />
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>

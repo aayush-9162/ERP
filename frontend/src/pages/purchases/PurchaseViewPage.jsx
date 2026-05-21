@@ -92,7 +92,7 @@ export default function PurchaseViewPage() {
             {purchase.items?.map((item, i) => (
               <tr key={item.id}>
                 <td className="py-2 text-gray-400">{i + 1}</td>
-                <td className="py-2"><span className="font-medium">{item.product_name}</span> <span className="text-xs text-gray-400">{item.product_sku}</span></td>
+                <td className="py-2"><span className="font-medium">{item.product_name}</span> <span className="ml-1 text-xs text-gray-400"><span className="font-mono">#{item.product_id}</span> · {item.product_sku}</span></td>
                 <td className="py-2 text-right tabular-nums">₹{Number(item.unit_price).toLocaleString('en-IN')}</td>
                 <td className="py-2 text-right">{item.quantity}</td>
                 <td className="py-2 text-right text-xs text-gray-500">{item.tax_rate}% (₹{Number(item.tax_amount).toFixed(2)})</td>

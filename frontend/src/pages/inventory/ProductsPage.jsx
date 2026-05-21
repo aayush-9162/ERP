@@ -110,6 +110,7 @@ export default function ProductsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
               <tr>
+                <th className="px-5 py-3">ID</th>
                 <th className="px-5 py-3">Product</th>
                 <th className="px-5 py-3">SKU</th>
                 <th className="px-5 py-3">Category</th>
@@ -126,6 +127,7 @@ export default function ProductsPage() {
                 const lowStock = p.total_stock < p.min_stock_alert;
                 return (
                   <tr key={p.id} className="hover:bg-gray-50">
+                    <td className="px-5 py-4 font-mono text-xs text-gray-400">#{p.id}</td>
                     <td className="px-5 py-4 font-medium">{p.name}</td>
                     <td className="px-5 py-4 font-mono text-xs text-gray-500">{p.sku}</td>
                     <td className="px-5 py-4 text-gray-500">{p.category?.name || '-'}</td>
@@ -159,7 +161,7 @@ export default function ProductsPage() {
                 );
               })}
               {products.length === 0 && (
-                <tr><td colSpan="9" className="px-5 py-8 text-center text-gray-400">No products found</td></tr>
+                <tr><td colSpan="10" className="px-5 py-8 text-center text-gray-400">No products found</td></tr>
               )}
             </tbody>
           </table>

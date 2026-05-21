@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Sale, SaleItem, Customer, User, Payment } = require('../models');
+const { sequelize, Sale, SaleItem, Customer, User, Payment } = require('../models');
 const SalesService = require('../services/sales.service');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
@@ -25,21 +25,39 @@ async function getSales(req, res, next) {
     const where = { company_id: req.companyId };
     if (payment_status) where.payment_status = payment_status;
     if (customer_id) where.customer_id = customer_id;
-    if (search) {
-      where[Op.or] = [
-        { invoice_number: { [Op.like]: `%${search}%` } },
-      ];
-    }
     if (from || to) {
       where.created_at = {};
       if (from) where.created_at[Op.gte] = new Date(from);
       if (to) where.created_at[Op.lte] = new Date(to);
     }
 
+    // Search across sale + customer fields. Done as a separate ID lookup so the main
+    // findAndCountAll keeps its normal include shape (no cross-table where weirdness).
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      const [rows] = await sequelize.query(`
+        SELECT DISTINCT s.id
+        FROM sales s
+        LEFT JOIN customers c ON c.id = s.customer_id
+        WHERE s.company_id = :cid AND (
+          s.invoice_number LIKE :q
+          OR c.name  LIKE :q
+          OR c.phone LIKE :q
+          OR c.email LIKE :q
+        )
+      `, { replacements: { cid: req.companyId, q } });
+
+      const ids = rows.map((r) => r.id);
+      if (ids.length === 0) {
+        return ApiResponse.paginated(res, { count: 0, rows: [], page, limit });
+      }
+      where.id = { [Op.in]: ids };
+    }
+
     const result = await Sale.findAndCountAll({
       where,
       include: [
-        { model: Customer, as: 'customer', attributes: ['id', 'name', 'phone'] },
+        { model: Customer, as: 'customer', attributes: ['id', 'name', 'phone', 'email'] },
         { model: User, as: 'createdBy', attributes: ['id', 'first_name', 'last_name'] },
       ],
       limit,

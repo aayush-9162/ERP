@@ -47,7 +47,7 @@ class SalesService {
     const transaction = await sequelize.transaction();
 
     try {
-      const { company_id, items, customer_id, discount_amount = 0, payment_method, paid_amount = 0, payments: paymentSplits, notes } = data;
+      const { company_id, items, customer_id, discount_amount = 0, payment_method, paid_amount = 0, payments: paymentSplits, notes, billing_address: billingOverride, delivery_address: deliveryOverride } = data;
 
       if (!items || items.length === 0) {
         throw ApiError.badRequest('At least one item is required');
@@ -134,6 +134,24 @@ class SalesService {
       // ---- 3. Create sale record ----
       const invoiceNumber = await SalesService._generateInvoiceNumber(transaction);
 
+      // Snapshot the customer's addresses at this moment so future edits don't rewrite the invoice
+      let billing_address = null;
+      let delivery_address = null;
+      if (billingOverride !== undefined) {
+        billing_address = billingOverride || null;
+      }
+      if (deliveryOverride !== undefined) {
+        delivery_address = deliveryOverride || null;
+      }
+      if ((billing_address === null || delivery_address === null) && customer_id) {
+        const Customer = require('../models').Customer;
+        const customer = await Customer.findByPk(customer_id, { transaction });
+        if (customer) {
+          if (billing_address === null && billingOverride === undefined) billing_address = customer.address || null;
+          if (delivery_address === null && deliveryOverride === undefined) delivery_address = customer.delivery_address || null;
+        }
+      }
+
       const sale = await Sale.create({
         company_id,
         invoice_number: invoiceNumber,
@@ -146,6 +164,8 @@ class SalesService {
         payment_status: paymentStatus,
         payment_method: payment_method || null,
         notes,
+        billing_address,
+        delivery_address,
         created_by: user_id,
       }, { transaction });
 

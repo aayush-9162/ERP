@@ -168,7 +168,10 @@ export default function StockAdjustmentPage() {
                       </td>
                       <td className="px-5 py-3">
                         <span className="font-medium">{m.product?.name}</span>
-                        <span className="ml-1 text-xs text-gray-400">{m.product?.sku}</span>
+                        <span className="ml-1 text-xs text-gray-400">
+                          {m.product_id && <><span className="font-mono">#{m.product_id}</span> · </>}
+                          {m.product?.sku}
+                        </span>
                       </td>
                       <td className="px-5 py-3">
                         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${

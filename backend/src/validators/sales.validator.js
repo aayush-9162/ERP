@@ -22,6 +22,8 @@ const createSaleValidation = [
   body('payments').optional().isArray(),
   body('payments.*.amount').isFloat({ min: 0.01 }).withMessage('Payment amount must be > 0'),
   body('payments.*.method').isIn(['CASH', 'UPI', 'CARD']).withMessage('Payment method required'),
+  body('billing_address').optional({ nullable: true, checkFalsy: true }).isString(),
+  body('delivery_address').optional({ nullable: true, checkFalsy: true }).isString(),
 ];
 
 const paymentValidation = [

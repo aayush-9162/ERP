@@ -148,7 +148,7 @@ export default function PurchaseEntryPage() {
               {productResults.map((p) => (
                 <button key={p.id} onMouseDown={() => addToCart(p)}
                   className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-primary-50">
-                  <div><span className="font-medium">{p.name}</span> <span className="text-xs text-gray-400">{p.sku}</span></div>
+                  <div><span className="font-medium">{p.name}</span> <span className="ml-2 text-xs text-gray-400"><span className="font-mono">#{p.id}</span> · {p.sku}</span></div>
                   <span className="font-semibold">₹{Number(p.purchase_price).toLocaleString('en-IN')}</span>
                 </button>
               ))}
@@ -174,7 +174,7 @@ export default function PurchaseEntryPage() {
                 const lineTax = Math.round(lineSub * c.tax_rate) / 100;
                 return (
                   <tr key={c.product_id}>
-                    <td className="px-4 py-3"><div className="font-medium">{c.name}</div><div className="text-xs text-gray-400">{c.sku}</div></td>
+                    <td className="px-4 py-3"><div className="font-medium">{c.name}</div><div className="text-xs text-gray-400"><span className="font-mono">#{c.product_id}</span> · {c.sku}</div></td>
                     <td className="px-4 py-3 text-right">
                       <input type="number" min="0" step="0.01" value={c.unit_price} onChange={(e) => updatePrice(c.product_id, e.target.value)}
                         className="w-24 rounded border px-2 py-1 text-right text-sm" />

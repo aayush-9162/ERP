@@ -96,15 +96,30 @@ export default function InvoicePage() {
 
         <div className="mb-6 rounded-lg bg-gray-50 p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Bill To</p>
-          {sale.customer ? (
-            <div className="mt-1 text-sm">
-              <p className="font-medium">{sale.customer.name}</p>
-              {sale.customer.phone && <p className="text-gray-500">{sale.customer.phone}</p>}
-              {sale.customer.email && <p className="text-gray-500">{sale.customer.email}</p>}
-              {sale.customer.address && <p className="whitespace-pre-line text-gray-500">{sale.customer.address}</p>}
-              {sale.customer.gst_number && <p className="text-gray-500">GSTIN: {sale.customer.gst_number}</p>}
-            </div>
-          ) : (
+          {sale.customer ? (() => {
+            // Prefer the snapshot stored on the sale; fall back to customer's current address only if there's no snapshot
+            const billing = sale.billing_address ?? sale.customer.address ?? '';
+            const delivery = sale.delivery_address ?? sale.customer.delivery_address ?? '';
+            const showShipTo = delivery && delivery.trim() && delivery !== billing;
+            return (
+              <div className="mt-1 grid gap-4 text-sm sm:grid-cols-2">
+                <div>
+                  <p className="font-medium">{sale.customer.name}</p>
+                  {sale.customer.phone && <p className="text-gray-500">{sale.customer.phone}</p>}
+                  {sale.customer.email && <p className="text-gray-500">{sale.customer.email}</p>}
+                  {billing && <p className="whitespace-pre-line text-gray-500">{billing}</p>}
+                  {sale.customer.gst_number && <p className="text-gray-500">GSTIN: {sale.customer.gst_number}</p>}
+                </div>
+                {showShipTo && (
+                  <div className="border-l border-gray-200 pl-4">
+                    <p className="text-xs font-semibold uppercase text-gray-500">Ship To</p>
+                    <p className="mt-1 font-medium">{sale.customer.name}</p>
+                    <p className="whitespace-pre-line text-gray-500">{delivery}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })() : (
             <p className="mt-1 text-sm text-gray-500">Walk-in Customer</p>
           )}
         </div>
@@ -113,7 +128,7 @@ export default function InvoicePage() {
           <thead className="border-b-2 border-gray-200 text-left text-xs font-semibold uppercase text-gray-500"><tr><th className="py-2">#</th><th className="py-2">Item</th><th className="py-2 text-right">Price</th><th className="py-2 text-right">Qty</th><th className="py-2 text-right">Tax</th><th className="py-2 text-right">Total</th></tr></thead>
           <tbody className="divide-y divide-gray-100">
             {sale.items?.map((item, i) => (
-              <tr key={item.id}><td className="py-2 text-gray-400">{i + 1}</td><td className="py-2"><span className="font-medium">{item.product_name}</span> <span className="text-xs text-gray-400">{item.product_sku}</span></td><td className="py-2 text-right tabular-nums">₹{Number(item.unit_price).toLocaleString('en-IN')}</td><td className="py-2 text-right">{item.quantity}</td><td className="py-2 text-right text-xs text-gray-500">{item.tax_rate}% (₹{Number(item.tax_amount).toFixed(2)})</td><td className="py-2 text-right font-semibold tabular-nums">₹{Number(item.total).toFixed(2)}</td></tr>
+              <tr key={item.id}><td className="py-2 text-gray-400">{i + 1}</td><td className="py-2"><span className="font-medium">{item.product_name}</span> <span className="ml-1 text-xs text-gray-400"><span className="font-mono">#{item.product_id}</span> · {item.product_sku}</span></td><td className="py-2 text-right tabular-nums">₹{Number(item.unit_price).toLocaleString('en-IN')}</td><td className="py-2 text-right">{item.quantity}</td><td className="py-2 text-right text-xs text-gray-500">{item.tax_rate}% (₹{Number(item.tax_amount).toFixed(2)})</td><td className="py-2 text-right font-semibold tabular-nums">₹{Number(item.total).toFixed(2)}</td></tr>
             ))}
           </tbody>
         </table>

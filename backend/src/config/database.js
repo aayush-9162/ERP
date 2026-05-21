@@ -9,7 +9,8 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'mysql',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    // SQL query logging is off by default. Run with DEBUG_SQL=true to enable.
+    logging: process.env.DEBUG_SQL === 'true' ? console.log : false,
     pool: {
       max: 25,
       min: 2,

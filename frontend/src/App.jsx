@@ -30,6 +30,8 @@ import QuotationViewPage from './pages/quotations/QuotationViewPage';
 import CompaniesPage from './pages/companies/CompaniesPage';
 import TeamPage from './pages/companies/TeamPage';
 import SettingsPage from './pages/settings/SettingsPage';
+import PaymentsPage from './pages/payments/PaymentsPage';
+import DayClosingPage from './pages/dayClosing/DayClosingPage';
 
 export default function App() {
   return (
@@ -71,6 +73,8 @@ export default function App() {
             <Route path="/reports/customers" element={<ProtectedRoute roles={['admin', 'manager']}><CustomerLedgerPage /></ProtectedRoute>} />
             <Route path="/reports/gst" element={<ProtectedRoute roles={['admin', 'manager']}><GSTReportsPage /></ProtectedRoute>} />
             <Route path="/reports/accounts" element={<ProtectedRoute roles={['admin', 'manager']}><AccountsPage /></ProtectedRoute>} />
+            <Route path="/payments" element={<ProtectedRoute roles={['admin', 'manager']}><PaymentsPage /></ProtectedRoute>} />
+            <Route path="/day-closing" element={<ProtectedRoute roles={['admin', 'manager']}><DayClosingPage /></ProtectedRoute>} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

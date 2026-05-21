@@ -25,6 +25,7 @@ const QuotationItem = require('./QuotationItem');
 const TaxRule = require('./TaxRule');
 const Currency = require('./Currency');
 const ExchangeRate = require('./ExchangeRate');
+const DayClosing = require('./DayClosing');
 
 // Phase 1
 Role.hasMany(User, { foreignKey: 'role_id', as: 'users' });
@@ -104,8 +105,12 @@ User.belongsTo(Tenant, { foreignKey: 'tenant_id', as: 'tenant' });
 Tenant.hasMany(Company, { foreignKey: 'tenant_id', as: 'companies' });
 Company.belongsTo(Tenant, { foreignKey: 'tenant_id', as: 'tenant' });
 
+// Day closings — created by a user, scoped to a company
+User.hasMany(DayClosing, { foreignKey: 'closed_by', as: 'dayClosings' });
+DayClosing.belongsTo(User, { foreignKey: 'closed_by', as: 'closedBy' });
+
 // Company -> all business entities (for referential integrity)
-const companyModels = [Category, Brand, Product, Warehouse, Customer, Supplier, Sale, Purchase, Quotation, Account, Inventory, StockMovement, Payment, SupplierPayment, Transaction];
+const companyModels = [Category, Brand, Product, Warehouse, Customer, Supplier, Sale, Purchase, Quotation, Account, Inventory, StockMovement, Payment, SupplierPayment, Transaction, DayClosing];
 for (const M of companyModels) {
   Company.hasMany(M, { foreignKey: 'company_id' });
   M.belongsTo(Company, { foreignKey: 'company_id', as: 'company' });
@@ -119,4 +124,5 @@ module.exports = {
   TaxRule, Currency, ExchangeRate,
   Account, Transaction,
   Quotation, QuotationItem,
+  DayClosing,
 };

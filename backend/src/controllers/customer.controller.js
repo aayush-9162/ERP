@@ -75,9 +75,9 @@ async function getCustomer(req, res, next) {
 // POST /api/customers
 async function createCustomer(req, res, next) {
   try {
-    const { name, phone, email, address, gst_number } = req.body;
+    const { name, phone, email, address, delivery_address, gst_number } = req.body;
     const customer = await Customer.create({
-      name, phone, email, address, gst_number,
+      name, phone, email, address, delivery_address, gst_number,
       company_id: req.companyId,
     });
     ApiResponse.created(res, { customer });
@@ -92,7 +92,7 @@ async function updateCustomer(req, res, next) {
     const customer = await Customer.findByPk(req.params.id);
     if (!customer) throw ApiError.notFound('Customer not found');
 
-    const allowed = ['name', 'phone', 'email', 'address', 'gst_number', 'status'];
+    const allowed = ['name', 'phone', 'email', 'address', 'delivery_address', 'gst_number', 'status'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];

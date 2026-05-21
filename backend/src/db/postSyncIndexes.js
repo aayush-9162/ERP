@@ -29,6 +29,22 @@ async function applyPostSyncIndexes(sequelize) {
     // Each statement is idempotent in spirit — swallow errors so re-running is safe
     await sequelize.query(sql).catch(() => {});
   }
+
+  // One-time backfill: freeze existing sales' address snapshots using each customer's
+  // CURRENT address. Once filled, future customer edits no longer affect old invoices.
+  // Idempotent — only touches rows where the snapshot column is NULL.
+  await sequelize.query(`
+    UPDATE sales s
+    JOIN customers c ON c.id = s.customer_id
+    SET s.billing_address = c.address
+    WHERE s.billing_address IS NULL AND s.customer_id IS NOT NULL AND c.address IS NOT NULL
+  `).catch(() => {});
+  await sequelize.query(`
+    UPDATE sales s
+    JOIN customers c ON c.id = s.customer_id
+    SET s.delivery_address = c.delivery_address
+    WHERE s.delivery_address IS NULL AND s.customer_id IS NOT NULL AND c.delivery_address IS NOT NULL
+  `).catch(() => {});
 }
 
 module.exports = { applyPostSyncIndexes, POST_SYNC_INDEXES };
